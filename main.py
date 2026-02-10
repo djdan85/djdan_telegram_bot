@@ -64,12 +64,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
     await update.message.reply_text(
-        "Ahoj!\n"
-        "Zdraví Tě DJ.DAN 🎧\n\n"
-        "Tento bot slouží pro zadávání písniček na přání.\n"
-        "Na veřejných akcích je nutné potvrdit sledování Instagramu "
-        "zasláním screenshotu.\n\n"
+        "Ahoj!\n" "Zdraví Tě DJ.DAN 🎧\n\n"
+        "Pro usnadnění zadávání písniček na přání jsem vytvořil tohoto bota.\n\n"
+        "Tento bot slouží jako návod pro výběr a sdílení hudby " "POUZE z TIDALu, protože TIDAL využívám k hudební produkci.\n\n"
+        "Jak postupovat:\n"
+        "1️⃣ Otevři TIDAL.com\n"
+        "2️⃣ Najdi písničku, která se ti líbí\n"
+        "3️⃣ Klikni na Sdílet → Kopírovat odkaz\n"
+        "4️⃣ Odkaz pošli sem do skupiny\n\n" "Doporučení:\n"
+        "• vybírej skladby, které mají energii na hraní\n"
+        "• klidně připiš krátký komentář nebo přání 🎶"
+        "Pro možnost poslání žádosti o písničku na přání je nutné potvrdit, že sledujete můj INSTA profil"
         "Ověření platí pouze po dobu konání akce."
+        "Na můj INSTA profil se dostanete zde: www.pasek-art.cz" )
+        
     )
 
     if user_id in ADMIN_IDS:
