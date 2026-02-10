@@ -13,7 +13,7 @@ from telegram.ext import (
 )
 import os
 import sqlite3
-import datetime
+import random
 
 # =========================
 # DATABASE
@@ -64,20 +64,26 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
     await update.message.reply_text(
-        "Ahoj!\n" "Zdraví Tě DJ.DAN 🎧\n\n"
-        "Pro usnadnění zadávání písniček na přání jsem vytvořil tohoto bota.\n\n"
-        "Tento bot slouží jako návod pro výběr a sdílení hudby " "POUZE z TIDALu, protože TIDAL využívám k hudební produkci.\n\n"
-        "Jak postupovat:\n"
-        "1️⃣ Otevři TIDAL.com\n"
-        "2️⃣ Najdi písničku, která se ti líbí\n"
-        "3️⃣ Klikni na Sdílet → Kopírovat odkaz\n"
-        "4️⃣ Odkaz pošli sem do skupiny\n\n" "Doporučení:\n"
-        "• vybírej skladby, které mají energii na hraní\n"
-        "• klidně připiš krátký komentář nebo přání 🎶"
-        "Pro možnost poslání žádosti o písničku na přání je nutné potvrdit, že sledujete můj INSTA profil"
-        "Ověření platí pouze po dobu konání akce."
-        "Na můj INSTA profil se dostanete zde: www.pasek-art.cz"        
-    )
+    "Ahoj!\n"
+    "Zdraví Tě DJ.DAN 🎧\n\n"
+    "Pro usnadnění zadávání písniček na přání jsem vytvořil tohoto bota.\n\n"
+    "Tento bot slouží jako návod pro výběr a sdílení hudby "
+    "POUZE z TIDALu, protože TIDAL využívám k hudební produkci.\n\n"
+    "Jak postupovat:\n"
+    "1️⃣ Otevři TIDAL.com\n"
+    "2️⃣ Najdi písničku, která se ti líbí\n"
+    "3️⃣ Klikni na Sdílet → Kopírovat odkaz\n"
+    "4️⃣ Odkaz pošli sem do skupiny\n\n"
+    "Doporučení:\n"
+    "• vybírej skladby, které mají energii na hraní\n"
+    "• klidně připiš krátký komentář nebo přání 🎶\n\n"
+    "ℹ️ Důležité:\n"
+    "Pro možnost poslání žádosti o písničku na přání je nutné potvrdit, "
+    "že sledujete můj Instagram.\n"
+    "Ověření platí pouze po dobu konání akce.\n\n"
+    "👉 Můj Instagram: https://www.pasek-art.cz"
+)
+
 
     if user_id in ADMIN_IDS:
         await update.message.reply_text(
@@ -92,8 +98,7 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    user_id = query.from_user.id
-    if user_id not in ADMIN_IDS:
+    if query.from_user.id not in ADMIN_IDS:
         return
 
     chat_id = query.message.chat_id
@@ -186,27 +191,33 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-      if "tidal.com" not in text:
-    try:
-        await update.message.delete()
-    except:
-        pass
+        if "tidal.com" not in text:
+            try:
+                await update.message.delete()
+            except:
+                pass
 
-    warn = await context.bot.send_message(
-        chat_id=chat_id,
-        text="⛔ Přijímám pouze odkazy z TIDAL.\n Zkopíruj prosím odkaz z aplikace nebo z webu TIDAL 🎶"
-    )
+            warn = await context.bot.send_message(
+                chat_id=chat_id,
+                text="⛔ Přijímám pouze odkazy z TIDAL.\n"
+                     "Zkopíruj prosím odkaz z aplikace nebo z webu TIDAL 🎶"
+            )
+            return
 
-    # volitelně: smazat i upozornění po 10 vteřinách
-    await context.bot.delete_message(
-        chat_id=chat_id,
-        message_id=warn.message_id,
-        delay=10
-    )
-    return
+        responses = [
+            "🎶 Díky za správný odkaz!\nZa chvilku se na to kouknu 👀\nDJ.DAN 😁👌",
+            "🔥 Odkaz dorazil správně!\nNech to na mě 🎧\nDJ.DAN",
+            "🎧 Nice choice!\nMrknu na to a uvidíme, kam se to hodí 😉\nDJ.DAN",
+            "✅ TIDAL link OK!\nDíky za tip, jede se dál 🎶\nDJ.DAN",
+            "😎 Přání přijato!\nSprávný odkaz = správný vibe 🔥\nDJ.DAN",
+            "🎶 Díky za tip!\nHudba se už chystá 🎧\nDJ.DAN",
+            "👌 Máme to!\nTIDAL odkaz sedí, mrknu na to 👀\nDJ.DAN",
+            "🎧 To zní zajímavě!\nNech to projet playlistem 😁\nDJ.DAN",
+            "🔥 Správný link!\nHudební kontrola probíhá 🎶\nDJ.DAN",
+            "😁 Odkaz v cajku!\nDíky za přání a jedeme dál 🎧\nDJ.DAN"
+        ]
 
-
-    await update.message.reply_text("🎶 Přání přijato, díky!")
+        await update.message.reply_text(random.choice(responses))
 
 # =========================
 # RUN APP
