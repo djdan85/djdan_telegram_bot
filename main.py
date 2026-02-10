@@ -81,7 +81,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     "Pro možnost poslání žádosti o písničku na přání je nutné potvrdit, "
     "že sledujete můj Instagram.\n"
     "Ověření platí pouze po dobu konání akce.\n\n"
-    "👉 Můj Instagram: https://www.pasek-art.cz"
+    "👉 Můj Instagram: instagram.com/pasekart.cz"
 )
 
 
@@ -187,7 +187,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         if not cursor.fetchone():
             await update.message.reply_text(
-                "📸 Pro veřejnou akci pošli screenshot, že sleduješ https://www.instagram.com/pasekart.cz"
+                "📸 Pro veřejnou akci pošli screenshot, že sleduješ instagram.com/pasekart.cz"
             )
             return
 
