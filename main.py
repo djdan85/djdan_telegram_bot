@@ -186,11 +186,25 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-        if "tidal.com" not in text:
-            await update.message.reply_text(
-                "⛔ Přijímám pouze odkazy z TIDAL."
-            )
-            return
+      if "tidal.com" not in text:
+    try:
+        await update.message.delete()
+    except:
+        pass
+
+    warn = await context.bot.send_message(
+        chat_id=chat_id,
+        text="⛔ Přijímám pouze odkazy z TIDAL.\n Zkopíruj prosím odkaz z aplikace nebo z webu TIDAL 🎶"
+    )
+
+    # volitelně: smazat i upozornění po 10 vteřinách
+    await context.bot.delete_message(
+        chat_id=chat_id,
+        message_id=warn.message_id,
+        delay=10
+    )
+    return
+
 
     await update.message.reply_text("🎶 Přání přijato, díky!")
 
