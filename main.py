@@ -1,5 +1,5 @@
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 import os
 group_settings = {}
 ADMIN_IDS = [5724886738]  # ← sem dáte SVŮJ Telegram user_id
@@ -40,11 +40,19 @@ async def stop_requests(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     group_id = update.effective_chat.id
-    group_settings[group_id]["song_requests"] = "off"
+
+    if group_id not in group_settings:
+        group_settings[group_id] = {
+            "event_type": "unset",
+            "song_requests": "off"
+        }
+    else:
+        group_settings[group_id]["song_requests"] = "off"
 
     await update.message.reply_text(
         "⛔ Přijímání písniček bylo vypnuto"
     )
+
 
 # Kontrola zprav
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -87,8 +95,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• vybírej skladby, které mají energii na hraní\n"
         "• klidně připiš krátký komentář nebo přání 🎶"
 
-        "Pro možnost poslání žádosti o písničku na přání je nutné potvrdit, že sledujete můj INSTA profil"
-        "Na můj INSTA profil se dostanete zde: www.pasek-art.cz"
+        "• klidně připiš krátký komentář nebo přání 🎶\n\n"
+        "Pro možnost poslání žádosti o písničku na přání je nutné potvrdit, že sledujete můj INSTA profil.\n"
+        "Na můj INSTA profil se dostanete zde: https://www.pasek-art.cz"
+
     )
 
 app = ApplicationBuilder().token(TOKEN).build()
