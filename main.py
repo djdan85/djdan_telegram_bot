@@ -76,8 +76,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• klidně připiš krátký komentář nebo přání 🎶"
         "Pro možnost poslání žádosti o písničku na přání je nutné potvrdit, že sledujete můj INSTA profil"
         "Ověření platí pouze po dobu konání akce."
-        "Na můj INSTA profil se dostanete zde: www.pasek-art.cz" )
-        
+        "Na můj INSTA profil se dostanete zde: www.pasek-art.cz"        
     )
 
     if user_id in ADMIN_IDS:
