@@ -29,15 +29,6 @@ CREATE TABLE IF NOT EXISTS groups (
 )
 """)
 
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS verified_users (
-    user_id INTEGER,
-    group_id INTEGER,
-    verified_at TEXT,
-    PRIMARY KEY (user_id, group_id)
-)
-""")
-
 conn.commit()
 
 # =========================
@@ -64,26 +55,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
     await update.message.reply_text(
-    "Ahoj!\n"
-    "Zdraví Tě DJ.DAN 🎧\n\n"
-    "Pro usnadnění zadávání písniček na přání jsem vytvořil tohoto bota.\n\n"
-    "Tento bot slouží jako návod pro výběr a sdílení hudby "
-    "POUZE z TIDALu, protože TIDAL využívám k hudební produkci.\n\n"
-    "Jak postupovat:\n"
-    "1️⃣ Otevři TIDAL.com\n"
-    "2️⃣ Najdi písničku, která se ti líbí\n"
-    "3️⃣ Klikni na Sdílet → Kopírovat odkaz\n"
-    "4️⃣ Odkaz pošli sem do skupiny\n\n"
-    "Doporučení:\n"
-    "• vybírej skladby, které mají energii na hraní\n"
-    "• klidně připiš krátký komentář nebo přání 🎶\n\n"
-    "ℹ️ Důležité:\n"
-    "Pro možnost poslání žádosti o písničku na přání je nutné potvrdit, "
-    "že sledujete můj Instagram.\n"
-    "Ověření platí pouze po dobu konání akce.\n\n"
-    "👉 Můj Instagram: instagram.com/pasekart.cz"
-)
-
+        "Ahoj!\n"
+        "Zdraví Tě DJ.DAN 🎧\n\n"
+        "Tento bot slouží pro zasílání písniček na přání.\n"
+        "Přijímám pouze odkazy z TIDALu 🎶\n\n"
+        "Jak postupovat:\n"
+        "1️⃣ Otevři TIDAL.com\n"
+        "2️⃣ Najdi písničku, která se ti líbí\n"
+        "3️⃣ Klikni na Sdílet → Kopírovat odkaz\n"
+        "4️⃣ Odkaz pošli do skupiny a můžeš přidat krátké věnování pro koho to je\n\n"
+        "DJ vybírá a mixuje – ne všechna přání musí zaznít 😉\n\n"
+        "👉 instagram.com/pasekart.cz"
+    )
 
     if user_id in ADMIN_IDS:
         await update.message.reply_text(
@@ -129,19 +112,9 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text("⛔ Přání dočasně pozastavena")
 
     elif data == "reset_confirm":
-        keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("✅ Ano, resetovat", callback_data="reset_yes")],
-            [InlineKeyboardButton("❌ Zrušit", callback_data="reset_no")]
-        ])
-        await query.message.reply_text(
-            "⚠️ Opravdu chceš resetovat akci?\nVšechna ověření budou smazána.",
-            reply_markup=keyboard
-        )
-
-    elif data == "reset_yes":
-        cursor.execute("DELETE FROM verified_users WHERE group_id=?", (chat_id,))
+        cursor.execute("DELETE FROM groups WHERE group_id=?", (chat_id,))
         conn.commit()
-        await query.message.reply_text("🧹 Akce resetována – ověření smazána")
+        await query.message.reply_text("🧹 Akce resetována")
 
     elif data == "broadcast_menu":
         keyboard = InlineKeyboardMarkup([
@@ -166,7 +139,6 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # =========================
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
-    user_id = update.effective_user.id
     text = update.message.text.lower()
 
     cursor.execute(
@@ -178,46 +150,51 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not row or row[1] == "off":
         return
 
-    event_type = row[0]
+    if "tidal.com" not in text:
+        try:
+            await update.message.delete()
+        except:
+            pass
 
-    if event_type == "public":
-        cursor.execute(
-            "SELECT 1 FROM verified_users WHERE user_id=? AND group_id=?",
-            (user_id, chat_id)
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text="⛔ Přijímám pouze odkazy z TIDAL.\n"
+                 "Zkopíruj prosím odkaz z aplikace nebo z webu TIDAL 🎶"
         )
-        if not cursor.fetchone():
-            await update.message.reply_text(
-                "📸 Pro veřejnou akci pošli screenshot, že sleduješ instagram.com/pasekart.cz"
-            )
-            return
+        return
 
-        if "tidal.com" not in text:
-            try:
-                await update.message.delete()
-            except:
-                pass
+responses = [
+    "🎶 Díky za správný odkaz!\nZa chvilku se na to kouknu 👀\nDJ.DAN 😁👌",
 
-            warn = await context.bot.send_message(
-                chat_id=chat_id,
-                text="⛔ Přijímám pouze odkazy z TIDAL.\n"
-                     "Zkopíruj prosím odkaz z aplikace nebo z webu TIDAL 🎶"
-            )
-            return
+    "🔥 Odkaz dorazil správně!\nNech to na mě 🎧\nDJ.DAN",
 
-        responses = [
-            "🎶 Díky za správný odkaz!\nZa chvilku se na to kouknu 👀\nDJ.DAN 😁👌",
-            "🔥 Odkaz dorazil správně!\nNech to na mě 🎧\nDJ.DAN",
-            "🎧 Nice choice!\nMrknu na to a uvidíme, kam se to hodí 😉\nDJ.DAN",
-            "✅ TIDAL link OK!\nDíky za tip, jede se dál 🎶\nDJ.DAN",
-            "😎 Přání přijato!\nSprávný odkaz = správný vibe 🔥\nDJ.DAN",
-            "🎶 Díky za tip!\nHudba se už chystá 🎧\nDJ.DAN",
-            "👌 Máme to!\nTIDAL odkaz sedí, mrknu na to 👀\nDJ.DAN",
-            "🎧 To zní zajímavě!\nNech to projet playlistem 😁\nDJ.DAN",
-            "🔥 Správný link!\nHudební kontrola probíhá 🎶\nDJ.DAN",
-            "😁 Odkaz v cajku!\nDíky za přání a jedeme dál 🎧\nDJ.DAN"
-        ]
+    "🎧 Nice choice!\nMrknu na to a uvidíme, kam se to hodí 😉\n"
+    "Více akcí a zákulisí 👉 https://instagram.com/pasekart.cz\n"
+    "DJ.DAN",
 
-        await update.message.reply_text(random.choice(responses))
+    "✅ TIDAL link OK!\nDíky za tip, jede se dál 🎶\nDJ.DAN",
+
+    "😎 Přání přijato!\nSprávný odkaz = správný vibe 🔥\n"
+    "Sleduj mě i na IG 👉 https://instagram.com/pasekart.cz\n"
+    "DJ.DAN",
+
+    "🎶 Díky za tip!\nHudba se už chystá 🎧\nDJ.DAN",
+
+    "👌 Máme to!\nTIDAL odkaz sedí, mrknu na to 👀\nDJ.DAN",
+
+    "🎧 To zní zajímavě!\nNech to projet playlistem 😁\n"
+    "Další akce najdeš zde 👉 https://instagram.com/pasekart.cz\n"
+    "DJ.DAN",
+
+    "🔥 Správný link!\nHudební kontrola probíhá 🎶\nDJ.DAN",
+
+    "😁 Odkaz v cajku!\nDíky za přání a jedeme dál 🎧\n"
+    "Follow pro další party 👉 https://instagram.com/pasekart.cz\n"
+    "DJ.DAN"
+]
+
+
+    await update.message.reply_text(random.choice(responses))
 
 # =========================
 # RUN APP
